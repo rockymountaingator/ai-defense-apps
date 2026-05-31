@@ -1,0 +1,143 @@
+@import "tailwindcss";
+
+@theme {
+  /* ── Warm Canvas Palette ── */
+  --color-ink: #222222;
+  --color-charcoal: #3f3f3f;
+  --color-soft-slate: #8a8580;
+  --color-canvas: #ffffff;
+  --color-cream: #faf9f6;
+  --color-mist: #f0ede8;
+  --color-sand: #e8e2d8;
+  --color-sand-dark: #d4cdc2;
+
+  /* ── Brand: Terracotta ── */
+  --color-terra: #c45d3e;
+  --color-terra-dark: #a34a30;
+  --color-terra-light: #f4e8e3;
+  --color-terra-glow: rgba(196, 93, 62, 0.12);
+
+  /* ── Supporting: Sage ── */
+  --color-sage: #5a7a64;
+  --color-sage-light: #e8f0ea;
+  --color-sage-dark: #3d5445;
+
+  /* ── Deep ── */
+  --color-navy: #1a2332;
+  --color-navy-light: #253348;
+
+  /* ── Functional ── */
+  --color-rose: #c44040;
+  --color-amber-warm: #b8862d;
+
+  /* ── Font ── */
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+html,
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* ── Range Slider ── */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 9999px;
+  outline: none;
+  cursor: pointer;
+  background: linear-gradient(
+    to right,
+    var(--color-terra) 0%,
+    var(--color-terra) var(--range-progress, 50%),
+    var(--color-sand) var(--range-progress, 50%),
+    var(--color-sand) 100%
+  );
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: white;
+  border: 3px solid var(--color-terra);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.15);
+  cursor: grab;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+input[type="range"]:active::-webkit-slider-thumb {
+  cursor: grabbing;
+  transform: scale(1.1);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: white;
+  border: 3px solid var(--color-terra);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.15);
+  cursor: grab;
+}
+
+/* ── Focus ── */
+*:focus-visible {
+  outline: 2px solid var(--color-terra);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Score Gauge Animation ── */
+@keyframes gauge-fill {
+  from {
+    stroke-dashoffset: 283;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.5s ease-out forwards;
+}
+
+/* ── Loading Dots ── */
+@keyframes bounce-dot {
+  0%, 80%, 100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
+}
+
+.dot-1 { animation: bounce-dot 1.4s infinite ease-in-out; animation-delay: -0.32s; }
+.dot-2 { animation: bounce-dot 1.4s infinite ease-in-out; animation-delay: -0.16s; }
+.dot-3 { animation: bounce-dot 1.4s infinite ease-in-out; }

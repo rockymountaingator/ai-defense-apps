@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Results — AI Defense Project</title>
+    <link href="https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-mono/style.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="/css/shared.css" rel="stylesheet">
+</head>
+<body>
+    <div class="noise-overlay"></div>
+
+    <div class="results-container" id="resultsContainer">
+        <div style="text-align:center; padding: 120px 0;">
+            <div style="font-family: var(--font-mono); font-size: 14px; color: var(--accent); animation: blink 1s infinite;">Loading results...</div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div style="font-family: var(--font-mono); font-size: 14px; color: var(--text-secondary);">
+                    © 2026 AI Defense Project
+                </div>
+                <div class="footer-links">
+                    <a href="/">Home</a>
+                    <a href="/assess">Take Assessment</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const API_BASE = window.__API_BASE__ || '';
+
+        function getToken() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('token');
+        }
+
+        function getQuadrantDescription(quadrant) {
+            const descriptions = {
+                'AI Vanguard': 'Your organization is both ready to execute and strategically positioned. You\'re among the few who can turn AI into a durable competitive advantage. The priority now is speed — executing before others close the gap.',
+                'The Experimentalist': 'You\'re investing in AI readiness but haven\'t built durable strategic defenses. Your initiatives could be replicated by well-funded competitors. Focus on building data moats and deeper platform integration.',
+                'Untapped Fortress': 'You have strong strategic positioning but lack the operational readiness to capitalize on it. Your moats won\'t protect you forever. The urgency is execution — shipping AI capabilities before your advantages erode.',
+                'Sitting Duck': 'Neither ready nor defended. Your organization is exposed on both dimensions. The good news: every step forward creates compounding returns. Start with Layer I basics and build from there.'
+            };
+            return descriptions[quadrant] || '';
+        }
+
+        async function loadResults() {
+            const token = getToken();
+            const container = document.getElementById('resultsContainer');
+
+            if (!token) {
+                container.innerHTML = `
+                    <div class="fade-in" style="text-align: center; padding: 120px 0;">
+                        <h2>No results found</h2>
+                        <p>Please complete the assessment first.</p>
+                        <a href="/assess" class="cta-button" style="margin-top: 24px;">Take Assessment</a>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/assessments/${token}`);
+                if (!res.ok) throw new Error('Not found');
+                const data = await res.json();
+                renderResults(data, token);
+            } catch (e) {
+                container.innerHTML = `
+                    <div class="fade-in" style="text-align: center; padding: 120px 0;">
+                        <h2>Results not found</h2>
+                        <p>This link may be invalid or expired.</p>
+                        <a href="/assess" class="cta-button" style="margin-top: 24px;">Take Assessment</a>
+                    </div>
+                `;
+            }
+        }
+
+        function renderResults(data, token) {
+            const s = data.scores;
+            const container = document.getElementById('resultsContainer');
+            const portalUrl = `${window.location.origin}/portal/${token}`;
+
+            container.innerHTML = `
+                <div class="fade-in">
+                    <!-- V_AI Score -->
+                    <div class="vai-score-section">
+                        <div class="vai-label">Your Strategic Viability Index</div>
+                        <div class="vai-number" id="vaiNumber">0</div>
+                        <div class="vai-sublabel">V_AI Score · ${data.company}</div>
+                    </div>
+
+                    <!-- Quadrant -->
+                    <div class="quadrant-section">
+                        <div class="quadrant-badge" style="color: ${s.quadrantColor}; border-color: ${s.quadrantColor}40; background: ${s.quadrantColor}10;">
+                            ${s.quadrant}
+                        </div>
+                        <p class="quadrant-desc">${getQuadrantDescription(s.quadrant)}</p>
+                    </div>
+
+                    <!-- Dimension Bars -->
+                    <div class="dimension-bars">
+                        <h3 style="font-family: var(--font-mono); font-size: 14px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); margin-bottom: 24px;">Dimension Scores</h3>
+
+                        <div class="dimension-row">
+                            <div class="dim-label">Operational Readiness</div>
+                            <div class="dim-bar-track"><div class="dim-bar-fill" data-value="${s.readiness}" style="width: 0%; background: #22D3EE;"></div></div>
+                            <div class="dim-value">${Math.round(s.readiness)}</div>
+                        </div>
+
+                        <div class="dimension-row">
+                            <div class="dim-label">Data Moats</div>
+                            <div class="dim-bar-track"><div class="dim-bar-fill" data-value="${s.dataMoat}" style="width: 0%; background: #22D3EE;"></div></div>
+                            <div class="dim-value">${Math.round(s.dataMoat)}</div>
+                        </div>
+
+                        <div class="dimension-row">
+                            <div class="dim-label">Strategic Defensibility</div>
+                            <div class="dim-bar-track"><div class="dim-bar-fill" data-value="${s.defensibility}" style="width: 0%; background: #22D3EE;"></div></div>
+                            <div class="dim-value">${Math.round(s.defensibility)}</div>
+                        </div>
+
+                        <div class="dimension-row">
+                            <div class="dim-label">Industry Displacement</div>
+                            <div class="dim-bar-track"><div class="dim-bar-fill" data-value="${s.displacement}" style="width: 0%; background: #A78BFA;"></div></div>
+                            <div class="dim-value">${Math.round(s.displacement)}</div>
+                        </div>
+
+                        <div class="dimension-row">
+                            <div class="dim-label">Proof of Execution</div>
+                            <div class="dim-bar-track"><div class="dim-bar-fill" data-value="${s.execution}" style="width: 0%; background: #FBBF24;"></div></div>
+                            <div class="dim-value">${Math.round(s.execution)}</div>
+                        </div>
+                    </div>
+
+                    <!-- Barrier -->
+                    <div class="barrier-section">
+                        <div class="barrier-label">Identified Barrier</div>
+                        <div class="barrier-text">${s.barrier || 'Not specified'}</div>
+                    </div>
+
+                    <!-- Portal Link -->
+                    <div class="portal-link">
+                        <div class="portal-link-label">Your Private Portal Link</div>
+                        <div class="portal-link-url">${portalUrl}</div>
+                    </div>
+
+                    <!-- CTAs -->
+                    <div class="cta-section">
+                        <h2>Download Your Reports</h2>
+                        <p style="max-width: 600px; margin: 0 auto 24px;">Get a detailed breakdown of your scores with specific recommendations tailored to your industry and company size.</p>
+                        <div class="cta-buttons">
+                            <a href="${API_BASE}/api/assessments/${token}/pdf" class="cta-button" download>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-right: 8px;"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+                                PDF Assessment Report
+                            </a>
+                            <a href="${API_BASE}/api/assessments/${token}/pptx" class="cta-button" download>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-right: 8px;"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+                                PPTX Board Brief
+                            </a>
+                            <a href="https://tidycal.com/bennycarreon/ai-defense-project" target="_blank" class="cta-button">
+                                Book a Strategy Call
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-left: 8px;">
+                                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Retake -->
+                    <div style="text-align: center; padding-bottom: 40px;">
+                        <a href="/assess" style="font-family: var(--font-mono); font-size: 13px; color: var(--text-secondary); text-decoration: none;">Retake Assessment →</a>
+                    </div>
+                </div>
+            `;
+
+            // Animate V_AI number
+            animateValue(document.getElementById('vaiNumber'), 0, s.v_ai, 1500);
+
+            // Animate bars
+            setTimeout(() => {
+                document.querySelectorAll('.dim-bar-fill').forEach(bar => {
+                    const val = bar.dataset.value;
+                    bar.style.width = val + '%';
+                });
+            }, 300);
+        }
+
+        function animateValue(el, start, end, duration) {
+            const range = end - start;
+            const startTime = performance.now();
+            function update(now) {
+                const elapsed = now - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const easeOut = 1 - Math.pow(1 - progress, 3);
+                el.textContent = Math.round(start + range * easeOut);
+                if (progress < 1) requestAnimationFrame(update);
+            }
+            requestAnimationFrame(update);
+        }
+
+        loadResults();
+    </script>
+</body>
+</html>

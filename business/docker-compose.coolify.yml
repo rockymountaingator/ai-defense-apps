@@ -1,0 +1,46 @@
+# Coolify Deployment - AI Defense Project
+services:
+  frontend:
+    build:
+      context: ./svi-preview
+      dockerfile: Dockerfile
+    depends_on:
+      - backend
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    networks:
+      - coolify
+      - default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.aibiz.entryPoints=http"
+      - "traefik.http.routers.aibiz.rule=Host(`business.aidefenseproject.com`)"
+      - "traefik.http.routers.aibiz.service=aibiz"
+      - "traefik.http.services.aibiz.loadbalancer.server.port=80"
+      - "traefik.docker.network=coolify"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DB_PATH=/app/data/assessments.db
+      - FRONTEND_URL=https://business.aidefenseproject.com
+      - VBOUT_API_KEY=2671556548478272135566648
+      - VBOUT_LIST_ID=185960
+    volumes:
+      - sqlite-data:/app/data
+    restart: unless-stopped
+    networks:
+      - coolify
+      - default
+
+volumes:
+  sqlite-data:
+
+networks:
+  coolify:
+    external: true

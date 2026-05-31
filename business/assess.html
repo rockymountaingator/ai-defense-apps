@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assessment — AI Defense Project</title>
+    <link href="https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-mono/style.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="/css/shared.css" rel="stylesheet">
+    <style>
+        .q-card {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        .q-layer {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--accent);
+            margin-bottom: 8px;
+            opacity: 0.7;
+        }
+        .q-text {
+            font-size: clamp(16px, 2.5vw, 20px);
+            font-weight: 400;
+            line-height: 1.4;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+        .opts-grid {
+            display: grid;
+            gap: 8px;
+        }
+        .opts-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+        .opts-grid.cols-1 { grid-template-columns: 1fr; }
+        .opt-btn {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-align: left;
+        }
+        .opt-btn:hover {
+            background: rgba(34,211,238,0.06);
+            border-color: rgba(34,211,238,0.2);
+            color: var(--text-primary);
+        }
+        .opt-btn.selected {
+            background: rgba(34,211,238,0.1);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .q-nav {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .text-input {
+            width: 100%;
+            max-width: 400px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+        .text-input:focus { border-color: var(--accent); }
+        .text-input::placeholder { color: rgba(255,255,255,0.25); }
+        .select-input {
+            width: 100%;
+            max-width: 400px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 14px;
+            outline: none;
+            appearance: none;
+            cursor: pointer;
+        }
+        .select-input option { background: #1a1a1a; color: #fff; }
+        .select-input:focus { border-color: var(--accent); }
+        /* Results preview */
+        .score-preview {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .score-number {
+            font-family: var(--font-mono);
+            font-size: 72px;
+            font-weight: 700;
+            color: var(--accent);
+            line-height: 1;
+        }
+        .score-label {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+        .gate-box {
+            max-width: 420px;
+            margin: 30px auto 0;
+            padding: 24px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            text-align: center;
+        }
+        .gate-box p {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+        .gate-perks {
+            text-align: left;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin: 16px 0;
+            list-style: none;
+            padding: 0;
+        }
+        .gate-perks li { padding: 4px 0; }
+        .gate-perks li::before { content: "→ "; color: var(--accent); }
+        /* Ensure card fits viewport */
+        #questionArea {
+            min-height: calc(100vh - 180px);
+            display: flex;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="noise-overlay"></div>
+
+    <section class="assess-hero" style="padding: 20px 0 0;">
+        <div class="container">
+            <a href="/" class="back-btn">← Back</a>
+        </div>
+    </section>
+
+    <section style="padding-top: 0;">
+        <div class="container">
+            <div class="progress-bar-container" id="progressContainer">
+                <div class="progress-track">
+                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
+                <div class="progress-label">
+                    <span id="progressStep">Question 1 of 20</span>
+                    <span id="progressLayer"></span>
+                </div>
+            </div>
+            <div id="questionArea"></div>
+        </div>
+    </section>
+
+    <script>
+        const API_BASE = window.__API_BASE__ || '';
+        let currentStep = 0;
+        let answers = {};
+
+        const STEPS = [
+            // LAYER I — Operational Readiness (5 scored questions)
+            { type:'choice', id:'q1', layer:'OPERATIONAL READINESS', weight:'30%',
+              q:'How would you characterize your organization\'s current data architecture?',
+              opts:['Legacy on-premise','Cloud but fragmented','Unified cloud with API','Real-time data lake'], cols:2 },
+            { type:'choice', id:'q2', layer:'OPERATIONAL READINESS', weight:'30%',
+              q:'What percentage of core business decisions currently require human review?',
+              opts:['Over 90%','50-90%','20-50%','Under 20%'], cols:2 },
+            { type:'choice', id:'q3', layer:'OPERATIONAL READINESS', weight:'30%',
+              q:'How does senior leadership conceptualize the strategic role of AI?',
+              opts:['Productivity tool','Automation layer','Agentic system','Core infrastructure'], cols:2 },
+            // Interleave: company size
+            { type:'choice', id:'employeeSize', layer:'ABOUT YOUR ORGANIZATION', weight:'',
+              q:'How large is your organization?',
+              opts:['1-10','11-50','51-200','201-500','501-1,000','1,000+'], cols:3 },
+            { type:'choice', id:'q12', layer:'OPERATIONAL READINESS', weight:'30%',
+              q:'Who can craft an AI prompt that produces production-quality output — not a demo, something you\'d ship?',
+              opts:['Nobody','1-2 people','Small dedicated team','Baseline across roles'], cols:2 },
+            { type:'choice', id:'q13', layer:'OPERATIONAL READINESS', weight:'30%',
+              q:'When your CEO asks "what\'s our AI strategy," who answers?',
+              opts:['Hasn\'t been asked','IT answers','Dedicated AI team','CEO drives it'], cols:2 },
+            // Interleave: revenue
+            { type:'choice', id:'revenue', layer:'ABOUT YOUR ORGANIZATION', weight:'',
+              q:'What\'s your company\'s annual revenue range?',
+              opts:['Under $1M','$1M – $10M','$10M – $50M','$50M – $200M','$200M – $1B','$1B+'], cols:3 },
+            // LAYER II — Data Moats (4 scored)
+            { type:'choice', id:'q4', layer:'DATA MOATS', weight:'40%',
+              q:'Does your business generate data loops that make your AI progressively smarter?',
+              opts:['No','Collect but don\'t leverage','Batch mode loops','Continuous flywheel'], cols:2 },
+            { type:'choice', id:'q5', layer:'DATA MOATS', weight:'40%',
+              q:'How durable is your primary data asset against well-funded replication?',
+              opts:['Static archives','Transaction/CRM','Real-time behavioral','Unique continuous data'], cols:2 },
+            // Interleave: industry
+            { type:'select', id:'industry', layer:'ABOUT YOUR ORGANIZATION', weight:'',
+              q:'What industry are you in?',
+              opts:['Technology / SaaS','Financial Services','Healthcare','Manufacturing','Retail / E-commerce','Professional Services','Education','Media / Entertainment','Energy / Utilities','Government','Real Estate','Logistics / Transportation','Agriculture','Telecommunications','Other'] },
+            { type:'choice', id:'q6', layer:'DATA MOATS', weight:'40%',
+              q:'Can you produce a complete auditable trail for any AI-influenced decision?',
+              opts:['No black box','Basic logging','Structured audit','Full decision package'], cols:2 },
+            { type:'choice', id:'q17', layer:'DATA MOATS', weight:'40%',
+              q:'If your team needed a clean dataset of top 5 business metrics formatted for AI training — how long?',
+              opts:['Don\'t have it','Weeks','Days','Hours','Already automated'], cols:3 },
+            // LAYER III — Strategic Defensibility (3 scored)
+            { type:'choice', id:'q7', layer:'STRATEGIC DEFENSIBILITY', weight:'30%',
+              q:'If an AI agent delivered your core service for $0.01/transaction, what remains?',
+              opts:['Very little','Relationships/trust','Regulatory/assets','Multiple moats'], cols:2 },
+            { type:'choice', id:'q8', layer:'STRATEGIC DEFENSIBILITY', weight:'30%',
+              q:'How deeply is your platform embedded in clients\' operational workflows?',
+              opts:['Point solution','Integrated with substitutes','Deep integration','Mission-critical'], cols:2 },
+            { type:'choice', id:'q9', layer:'STRATEGIC DEFENSIBILITY', weight:'30%',
+              q:'If OpenAI or Google replicated your core capability tomorrow, what happens?',
+              opts:['Existential','Severe pivot needed','Manageable','Irrelevant'], cols:2 },
+            // LAYER IV — Industry Displacement (2 scored)
+            { type:'choice', id:'q10', layer:'INDUSTRY DISPLACEMENT', weight:'',
+              q:'Where does your organization sit relative to AI displacement in your value chain?',
+              opts:['Intermediary','Parts at risk','Physical/regulatory layer','Own AI infrastructure'], cols:2 },
+            // Interleave: company name
+            { type:'text', id:'company', layer:'ABOUT YOUR ORGANIZATION', weight:'',
+              q:'What\'s your company name?', placeholder:'Acme Corp' },
+            { type:'choice', id:'q11', layer:'INDUSTRY DISPLACEMENT', weight:'',
+              q:'How does your revenue-per-employee compare to AI-native competitors?',
+              opts:['Significantly below','At par','Above benchmarks','Matching AI-native'], cols:2 },
+            // LAYER V — Proof of Execution (2 scored)
+            { type:'choice', id:'q14', layer:'PROOF OF EXECUTION', weight:'',
+              q:'What AI tools are currently in production — not piloted, actually running daily?',
+              opts:['None','Individual use','Departmental','Company-wide','AI-native'], cols:3 },
+            // Interleave: your name
+            { type:'text', id:'name', layer:'FINAL STEPS', weight:'',
+              q:'Your name', placeholder:'Jane Smith' },
+            { type:'choice', id:'q15', layer:'PROOF OF EXECUTION', weight:'',
+              q:'When did your company last ship an AI-powered feature to production?',
+              opts:['Never','12+ months ago','6-12 months','Within 90 days','Weekly'], cols:3 },
+            // Lead intelligence
+            { type:'choice', id:'q16', layer:'FINAL QUESTION', weight:'Not scored',
+              q:'What\'s the single biggest barrier preventing your company from making more progress with AI?',
+              opts:['Don\'t know where to start','Budget','Talent gap','Data isn\'t ready','Leadership buy-in','Integration complexity'], cols:3 },
+            // Results gate
+            { type:'gate' }
+        ];
+
+        const TOTAL = STEPS.length;
+        const area = document.getElementById('questionArea');
+        const pFill = document.getElementById('progressFill');
+        const pStep = document.getElementById('progressStep');
+        const pLayer = document.getElementById('progressLayer');
+        const pCont = document.getElementById('progressContainer');
+
+        function render() {
+            const step = STEPS[currentStep];
+            if (!step) return;
+
+            const pct = ((currentStep) / (TOTAL - 1)) * 100;
+            pFill.style.width = pct + '%';
+            pStep.textContent = step.type === 'gate' ? 'Results' : `Question ${currentStep + 1} of ${TOTAL - 1}`;
+            pLayer.textContent = step.layer || '';
+
+            if (step.type === 'gate') {
+                renderGate();
+            } else if (step.type === 'choice') {
+                renderChoice(step);
+            } else if (step.type === 'select') {
+                renderSelect(step);
+            } else if (step.type === 'text') {
+                renderText(step);
+            }
+        }
+
+        function renderChoice(step) {
+            const sel = answers[step.id];
+            const colClass = step.cols === 3 ? 'cols-3' : (step.cols === 2 ? 'cols-2' : 'cols-1');
+            area.innerHTML = `
+                <div class="q-card fade-in">
+                    ${step.layer ? `<div class="q-layer">${step.layer}${step.weight ? ' · <span style="opacity:0.5">' + step.weight + '</span>' : ''}</div>` : ''}
+                    <div class="q-text">${step.q}</div>
+                    <div class="opts-grid ${colClass}">
+                        ${step.opts.map(o => `<button class="opt-btn ${sel === o ? 'selected' : ''}" data-val="${o.replace(/"/g,'&quot;')}">${o}</button>`).join('')}
+                    </div>
+                    <div class="q-nav">
+                        ${currentStep > 0 ? '<button class="back-btn" onclick="goBack()">← Back</button>' : '<span></span>'}
+                    </div>
+                </div>`;
+            area.querySelectorAll('.opt-btn').forEach(btn => {
+                btn.addEventListener('click', () => selectOpt(step.id, btn.dataset.val, btn));
+            });
+        }
+
+        function renderSelect(step) {
+            const val = answers[step.id] || '';
+            area.innerHTML = `
+                <div class="q-card fade-in">
+                    ${step.layer ? `<div class="q-layer">${step.layer}</div>` : ''}
+                    <div class="q-text">${step.q}</div>
+                    <select class="select-input" id="sel_${step.id}">
+                        <option value="">Select...</option>
+                        ${step.opts.map(o => `<option value="${o}" ${val === o ? 'selected' : ''}>${o}</option>`).join('')}
+                    </select>
+                    <div class="q-nav">
+                        <button class="back-btn" onclick="goBack()">← Back</button>
+                        <button class="cta-button" style="padding:10px 24px;font-size:13px;" onclick="submitSelect('${step.id}')">Continue</button>
+                    </div>
+                </div>`;
+        }
+
+        function renderText(step) {
+            const val = answers[step.id] || '';
+            area.innerHTML = `
+                <div class="q-card fade-in">
+                    ${step.layer ? `<div class="q-layer">${step.layer}</div>` : ''}
+                    <div class="q-text">${step.q}</div>
+                    <input type="text" class="text-input" id="txt_${step.id}" value="${val.replace(/"/g,'&quot;')}" placeholder="${step.placeholder || ''}" onkeydown="if(event.key==='Enter')submitText('${step.id}')">
+                    <div class="q-nav">
+                        <button class="back-btn" onclick="goBack()">← Back</button>
+                        <button class="cta-button" style="padding:10px 24px;font-size:13px;" onclick="submitText('${step.id}')">Continue</button>
+                    </div>
+                </div>`;
+            document.getElementById('txt_' + step.id).focus();
+        }
+
+        function renderGate() {
+            const score = calcScore();
+            pCont.style.display = 'none';
+            area.innerHTML = `
+                <div class="q-card fade-in">
+                    <div class="score-preview">
+                        <div class="score-number">${score.v_ai}</div>
+                        <div class="score-label">V_AI Score</div>
+                        <div style="margin-top:12px;font-family:var(--font-mono);font-size:14px;color:var(--text-secondary);">${score.quadrant}</div>
+                    </div>
+                    <div class="gate-box">
+                        <p>Your full strategic analysis is ready. Enter your email to receive:</p>
+                        <ul class="gate-perks">
+                            <li>9-page PDF assessment report</li>
+                            <li>5-slide PPTX board brief</li>
+                            <li>Detailed dimension breakdowns</li>
+                            <li>Strategic recommendations</li>
+                        </ul>
+                        <input type="email" class="text-input" id="gateEmail" placeholder="you@company.com" style="margin-bottom:16px;" onkeydown="if(event.key==='Enter')submitGate()">
+                        <button class="cta-button" style="width:100%;" onclick="submitGate()">Send Full Report</button>
+                    </div>
+                    <div class="q-nav" style="justify-content:center;margin-top:24px;">
+                        <button class="back-btn" onclick="goBack()">← Back to questions</button>
+                    </div>
+                </div>`;
+            document.getElementById('gateEmail').focus();
+        }
+
+        function selectOpt(id, val, btn) {
+            answers[id] = val;
+            document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            setTimeout(() => {
+                if (currentStep < TOTAL - 1) { currentStep++; render(); }
+            }, 300);
+        }
+
+        function submitSelect(id) {
+            const val = document.getElementById('sel_' + id).value;
+            if (!val) return;
+            answers[id] = val;
+            if (currentStep < TOTAL - 1) { currentStep++; render(); }
+        }
+
+        function submitText(id) {
+            const val = document.getElementById('txt_' + id).value.trim();
+            if (!val) return;
+            answers[id] = val;
+            if (currentStep < TOTAL - 1) { currentStep++; render(); }
+        }
+
+        function goBack() {
+            if (currentStep > 0) { currentStep--; render(); }
+        }
+
+        function calcScore() {
+            // Simple V_AI estimation (0-100) based on scored questions
+            const scored = ['q1','q2','q3','q4','q5','q6','q7','q8','q9','q10','q11','q12','q13','q14','q15','q17'];
+            let total = 0, count = 0;
+            scored.forEach(id => {
+                if (answers[id]) {
+                    const optIdx = STEPS.find(s=>s.id===id)?.opts?.indexOf(answers[id]) ?? -1;
+                    if (optIdx >= 0) { total += optIdx; count++; }
+                }
+            });
+            if (count === 0) return { v_ai: '—', quadrant: 'Complete all questions' };
+            const raw = Math.round((total / (count * 3)) * 100);
+            const v_ai = Math.min(100, Math.max(0, raw));
+            let quadrant = 'AI Native';
+            if (v_ai < 25) quadrant = 'Sitting Duck';
+            else if (v_ai < 50) quadrant = 'Alert Observer';
+            else if (v_ai < 75) quadrant = 'Strategic Builder';
+            return { v_ai, quadrant };
+        }
+
+        async function submitGate() {
+            const email = document.getElementById('gateEmail').value.trim();
+            if (!email || !email.includes('@')) {
+                document.getElementById('gateEmail').style.borderColor = '#FF4444';
+                return;
+            }
+
+            area.innerHTML = `
+                <div class="q-card fade-in" style="text-align:center;padding:60px 20px;">
+                    <div style="font-family:var(--font-mono);font-size:14px;color:var(--accent);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:24px;">Generating your report</div>
+                    <div style="font-family:var(--font-mono);font-size:48px;color:var(--accent);">●</div>
+                </div>`;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/assessments`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: answers.name || 'Unknown',
+                        email: email,
+                        company: answers.company || 'Unknown',
+                        industry: answers.industry || '',
+                        revenue: answers.revenue || '',
+                        employeeSize: answers.employeeSize || '',
+                        answers: answers
+                    })
+                });
+                if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Server error'); }
+                const data = await res.json();
+                window.location.href = `/results.html?token=${data.token}`;
+            } catch (err) {
+                area.innerHTML = `
+                    <div class="q-card fade-in" style="text-align:center;padding:60px 20px;">
+                        <h3 style="color:#FF4444;">Error</h3>
+                        <p style="color:var(--text-secondary);">${err.message}</p>
+                        <button class="cta-button" onclick="currentStep=TOTAL-1;render();" style="margin-top:16px;">Try Again</button>
+                    </div>`;
+            }
+        }
+
+        render();
+    </script>
+</body>
+</html>
