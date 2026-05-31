@@ -6,6 +6,7 @@ const path = require('path');
 const fs = require('fs');
 
 const app = express();
+const { isBusinessEmail } = require('./utils/emailValidation');
 const PORT = process.env.PORT || 3001;
 
 // Middleware
@@ -186,6 +187,10 @@ app.post('/api/assessments', async (req, res) => {
 
     if (!name || !email || !company || !answers) {
       return res.status(400).json({ error: 'Missing required fields: name, email, company, answers' });
+    }
+
+    if (!isBusinessEmail(email)) {
+      return res.status(400).json({ error: 'Please use a business email address. Free email providers (Gmail, Yahoo, etc.) and disposable email addresses are not accepted.' });
     }
 
     const token = uuidv4();
