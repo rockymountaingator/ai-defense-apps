@@ -25,13 +25,16 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=builder /app/public ./public
+# Copy standalone build (server.js + .next/standalone)
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # CRITICAL: Copy PDFKit font data files that Next.js standalone doesn't trace
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/pdfkit ./node_modules/pdfkit
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/qrcode ./node_modules/qrcode
+
+# Copy public dir only if it exists (create empty to be safe)
+RUN mkdir -p ./public
 
 USER nextjs
 
