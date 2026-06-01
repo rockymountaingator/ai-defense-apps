@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
+  serverExternalPackages: ['pdfkit', 'qrcode'],
 };
 
 export default nextConfig;
