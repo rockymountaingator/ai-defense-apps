@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   serverExternalPackages: ['pdfkit', 'qrcode'],
+  outputFileTracingIncludes: {
+    '/api/generate-pdf': ['./node_modules/pdfkit/**/*', './node_modules/qrcode/**/*'],
+  },
 };
 
 export default nextConfig;
