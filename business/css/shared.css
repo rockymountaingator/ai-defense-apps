@@ -671,6 +671,40 @@ footer {
     word-break: break-all;
 }
 
+/* Scroll indicator — centered at bottom of hero */
+.scroll-indicator {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.3s ease;
+    z-index: 10;
+}
+
+.scroll-indicator:hover {
+    opacity: 1;
+}
+
+.scroll-indicator span {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(250,250,250,0.4);
+}
+
+/* Ensure hero section is positioned for absolute child */
+section:first-of-type {
+    position: relative;
+    min-height: 100vh;
+}
+
 @media (max-width: 768px) {
     .dimension-row {
         flex-direction: column;
