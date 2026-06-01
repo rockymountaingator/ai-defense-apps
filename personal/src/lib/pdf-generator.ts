@@ -696,7 +696,112 @@ export async function generatePersonalPDF(results: AssessmentResults): Promise<B
       addFooter(doc);
 
       // ═══════════════════════════════════
-      // PAGE 5: SHARE + CTA
+      // PAGE 5: A NOTE FROM BENNY
+      // ═══════════════════════════════════
+      doc.addPage();
+
+      // Full-width navy banner
+      const noteBannerH = 120;
+      doc.rect(0, 0, doc.page.width, noteBannerH).fill(DARK_NAVY);
+
+      doc
+        .font('Helvetica')
+        .fontSize(9)
+        .fillColor('#9CA3AF')
+        .text('A PERSONAL NOTE', MARGIN, 35, {
+          width: pw,
+          align: 'center',
+          characterSpacing: 3,
+        });
+
+      doc
+        .font('Helvetica-Bold')
+        .fontSize(26)
+        .fillColor(WHITE)
+        .text('From Benny', MARGIN, 55, {
+          width: pw,
+          align: 'center',
+        });
+
+      doc
+        .font('Helvetica-Oblique')
+        .fontSize(11)
+        .fillColor('#D1D5DB')
+        .text('Founder, AI Defense Project', MARGIN, 88, {
+          width: pw,
+          align: 'center',
+        });
+
+      y = noteBannerH + 30;
+
+      const noteParagraphs = [
+        "Hey \u2014 thanks for taking this seriously. Most people skim an assessment like this, see a score, and move on. You're still reading, which already puts you ahead.",
+        "Here's the honest truth: this isn't a scientific diagnosis. It's a mirror. The questions are designed to surface patterns in how you actually work \u2014 not how you think you work. The frameworks behind it (OECD, McKinsey, Stanford) are real, but your results are directional, not definitive.",
+        "Here's what I'd do with this report:",
+      ];
+
+      for (const para of noteParagraphs) {
+        const textH = doc.heightOfString(para, { width: pw - 40, lineGap: 4 });
+        y = addPageIfNeeded(doc, y, textH + 20);
+        doc
+          .font('Helvetica')
+          .fontSize(11)
+          .fillColor(BODY_TEXT)
+          .text(para, MARGIN + 20, y, { width: pw - 40, lineGap: 4 });
+        y += textH + 16;
+      }
+
+      // Bullet points
+      const bullets = [
+        "Pick the one insight that stings a little. That's the real one.",
+        "Ignore the urge to fix everything at once. Pick one thing for this week.",
+        "Come back in 30 days and retake it. See what shifted.",
+      ];
+
+      for (const bullet of bullets) {
+        const textH = doc.heightOfString(bullet, { width: pw - 60, lineGap: 3 });
+        y = addPageIfNeeded(doc, y, textH + 10);
+        doc
+          .font('Helvetica-Bold')
+          .fontSize(11)
+          .fillColor(BRAND_ORANGE)
+          .text('\u2022', MARGIN + 24, y);
+        doc
+          .font('Helvetica')
+          .fontSize(11)
+          .fillColor(BODY_TEXT)
+          .text(bullet, MARGIN + 40, y, { width: pw - 60, lineGap: 3 });
+        y += textH + 10;
+      }
+
+      y += 8;
+      const closing = "If you want to talk through your results \u2014 whether for your own career or your team \u2014 reach out. I read every message.";
+      const closingH = doc.heightOfString(closing, { width: pw - 40, lineGap: 4 });
+      y = addPageIfNeeded(doc, y, closingH + 30);
+      doc
+        .font('Helvetica')
+        .fontSize(11)
+        .fillColor(BODY_TEXT)
+        .text(closing, MARGIN + 20, y, { width: pw - 40, lineGap: 4 });
+      y += closingH + 16;
+
+      // Signature
+      doc
+        .font('Helvetica-Bold')
+        .fontSize(12)
+        .fillColor(DARK_TEXT)
+        .text('\u2014 Benny Carreon', MARGIN + 20, y);
+      y += 18;
+      doc
+        .font('Helvetica')
+        .fontSize(9)
+        .fillColor(MUTED_TEXT)
+        .text('Founder, AI Defense Project', MARGIN + 20, y);
+
+      addFooter(doc);
+
+      // ═══════════════════════════════════
+      // PAGE 6: SHARE + CTA
       // ═══════════════════════════════════
       doc.addPage();
       y = addHeader(doc);
@@ -824,7 +929,7 @@ export async function generatePersonalPDF(results: AssessmentResults): Promise<B
         .fontSize(8)
         .fillColor(MUTED_TEXT)
         .text(
-          'This assessment is for informational purposes and personal reflection. It is not a guarantee of career outcomes. Results are based on self-reported behavioral indicators and should be considered alongside professional career advice.',
+          "This assessment is for informational purposes and personal reflection. It's not a guarantee of career outcomes, a scientific study, or a replacement for professional career advice. It's a practical tool to help you think about where you stand with AI \u2014 and what to do next.",
           MARGIN,
           y,
           { width: pw, lineGap: 2 },

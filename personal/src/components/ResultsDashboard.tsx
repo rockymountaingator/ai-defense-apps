@@ -343,6 +343,46 @@ export default function ResultsDashboard({ results }: ResultsDashboardProps) {
           </div>
         </motion.div>
 
+        {/* ── A Note from Benny ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mb-5 rounded-2xl border border-sand bg-navy p-6 sm:p-8"
+        >
+          <div className="mb-4 flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-terra/20">
+              <span className="text-lg">✏️</span>
+            </div>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-white/90">
+              A note from Benny
+            </h3>
+          </div>
+          <div className="space-y-3 text-sm leading-relaxed text-white/70">
+            <p>
+              Hey — thanks for taking this seriously. Most people skim an assessment like this, see a score, and move on. You're still reading, which already puts you ahead.
+            </p>
+            <p>
+              Here's the honest truth: this isn't a scientific diagnosis. It's a mirror. The questions are designed to surface patterns in how you actually work — not how you think you work. The frameworks behind it (OECD, McKinsey, Stanford) are real, but your results are directional, not definitive.
+            </p>
+            <p>
+              Here's what I'd do with this report:
+            </p>
+            <ul className="ml-4 space-y-1.5 text-white/60">
+              <li>• Pick the one insight that stings a little. That's the real one.</li>
+              <li>• Ignore the urge to fix everything at once. Pick one thing for this week.</li>
+              <li>• Come back in 30 days and retake it. See what shifted.</li>
+            </ul>
+            <p>
+              If you want to talk through your results — whether for your own career or your team — reach out. I read every message.
+            </p>
+            <p className="pt-1 font-medium text-white/90">
+              — Benny Carreon<br />
+              <span className="text-xs font-normal text-white/40">Founder, AI Defense Project</span>
+            </p>
+          </div>
+        </motion.div>
+
         {/* ── Restart ── */}
         <div className="text-center">
           <button
@@ -356,7 +396,7 @@ export default function ResultsDashboard({ results }: ResultsDashboardProps) {
           </button>
         </div>
 
-        {/* ── Credibility Footer ── */}
+        {/* ── Disclaimer Footer ── */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -364,8 +404,7 @@ export default function ResultsDashboard({ results }: ResultsDashboardProps) {
           className="border-t border-sand pt-6 text-center"
         >
           <p className="text-xs leading-relaxed text-soft-slate">
-            This assessment uses behavioral questioning and cross-validation to go beyond self-reported answers.
-            Your hidden scoring dimensions include routine index, human advantage, adaptability quotient, self-perception gap, and depth of self-awareness.
+            This assessment is for informational purposes and personal reflection. It's not a guarantee of career outcomes, a scientific study, or a replacement for professional career advice. It's a practical tool to help you think about where you stand with AI — and what to do next.
           </p>
           <p className="mt-2 text-xs text-sand-dark">
             © {new Date().getFullYear()} AI Defense Project · Velocity Technology Group
