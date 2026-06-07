@@ -167,10 +167,13 @@ export default function AssessmentPage() {
             className="rounded-2xl border border-sand bg-canvas p-8 shadow-sm"
           >
             <div className="mb-6 text-center">
-              <div className="mb-4 text-4xl">📧</div>
-              <h2 className="mb-2 text-2xl font-bold text-ink">One more thing</h2>
-              <p className="text-charcoal">
-                Where should we send your personalized report?
+              <div className="mb-4 text-4xl">📖</div>
+              <h2 className="mb-2 text-2xl font-bold text-ink">Your results are ready</h2>
+              <p className="mb-1 text-charcoal">
+                Plus a free copy of <em>"You're Not Being Replaced"</em> — a short guide to working alongside AI without the panic.
+              </p>
+              <p className="text-sm text-soft-slate">
+                Enter your email and we'll send your full report + the free ebook.
               </p>
             </div>
 
@@ -195,11 +198,11 @@ export default function AssessmentPage() {
                 disabled={!emailInput.trim()}
                 className="w-full rounded-xl bg-terra px-6 py-3 font-semibold text-white transition-all hover:bg-terra-dark hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Get My Results
+                Get My Results + Free Ebook
               </button>
 
               <p className="text-center text-xs text-soft-slate">
-                We&apos;ll never spam you. Unsubscribe anytime.
+                No spam. Just your results, the ebook, and occasional AI readiness tips. Unsubscribe anytime.
               </p>
             </form>
           </motion.div>
